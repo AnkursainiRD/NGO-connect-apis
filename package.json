@@ -1,0 +1,12 @@
+{
+    "name": "ngoconnect",
+    "private": true,
+    "scripts": {
+      "start:all": "concurrently \"npm start --prefix services/auth-service\" \"npm start --prefix services/donation-service\""
+    },
+    "devDependencies": {
+      "concurrently": "^8.0.0",
+      "nodemon": "^3.0.0"
+    }
+  }
+   
