@@ -65,7 +65,6 @@ NGOConnect/
 - **Frontend (Optional):** React + Tailwind + Redux  
 - **Deployment:** Docker + Render / Railway / AWS ECS / Vercel  
 - **Monitoring:** Sentry, Grafana, ELK stack  
-
 ---
 
 ## 🚀 Features
