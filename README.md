@@ -38,7 +38,7 @@ Optional / Future Services:
 ---
 
 ## 🏗 Folder Structure (Example)
-
+##
 NGOConnect/
 ├── services/
 │ ├── authService/
@@ -49,8 +49,7 @@ NGOConnect/
 ├── docker/ # Dockerfiles and docker-compose
 ├── scripts/ # Dev / deployment scripts
 └── README.md
-
-
+##
 
 ---
 
