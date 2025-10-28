@@ -2,7 +2,7 @@
 
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)  
 [![Node.js](https://img.shields.io/badge/Node.js-%3E=18-brightgreen)](https://nodejs.org/)  
-[![Docker](https://img.shields.io/badge/Docker-%3E=20-blue)](https://www.docker.com/)
+[![Docker](https://img.shields.io/badge/Docker-%3E=20-blue)](https://www.docker.com/  )
 
 ---
 
