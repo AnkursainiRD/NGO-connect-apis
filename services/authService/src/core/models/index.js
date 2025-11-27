@@ -15,6 +15,7 @@ import sequelize, {
   closeDatabaseConnection 
 } from '#config/database.js';
 import User from './User.model.js';
+import { UserActivityLogs } from './UserActivityLogs.model.js';
 // Import other models here as you create them
 // import RefreshToken from './RefreshToken.model.js';
 // import PasswordResetToken from './PasswordResetToken.model.js';
@@ -28,17 +29,19 @@ import User from './User.model.js';
 
 // Model associations can be defined here
 const setupAssociations = () => {
-  // Example:
-  // User.hasMany(RefreshToken, { 
-  //   foreignKey: 'user_id', 
-  //   as: 'refreshTokens',
-  //   onDelete: 'CASCADE'
-  // });
-  
-  // RefreshToken.belongsTo(User, { 
-  //   foreignKey: 'user_id', 
-  //   as: 'user' 
-  // });
+  // Collect all models
+  const models = {
+    User,
+    UserActivityLogs,
+    // Add other models here
+  };
+
+  // Call associate method on each model if it exists
+  Object.values(models).forEach(model => {
+    if (model.associate) {
+      model.associate(models);
+    }
+  });
 };
 
 // Initialize associations
@@ -58,6 +61,7 @@ export {
   
   // Models
   User,
+  UserActivityLogs,
   // Add other models here as you create them
   // RefreshToken,
   // PasswordResetToken,
@@ -72,5 +76,6 @@ export default {
   syncDatabase,
   closeDatabaseConnection,
   User,
+  UserActivityLogs,
   // Add other models here
 };

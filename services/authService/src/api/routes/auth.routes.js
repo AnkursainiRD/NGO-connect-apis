@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import AuthController from '#api/controllers/authController.js';
 import { registerValidator, loginValidator } from '#api/validators/auth.validator.js';
+import { authenticate } from '#api/middlewares/auth.middleware.js';
 
 const router = Router();
 const authController = new AuthController();
@@ -17,10 +18,10 @@ router.post('/register', registerValidator, authController.register);
 router.post('/login', loginValidator, authController.login);
 
 // POST /api/v1/auth/logout - Logout user
-router.post('/logout', authController.logout);
+router.post('/logout', authenticate, authController.logout);
 
 // POST /api/v1/auth/refresh - Refresh access token
-router.post('/refresh', authController.refreshToken);
+router.post('/refresh', authenticate, authController.refreshToken);
 
 // POST /api/v1/auth/forgot-password - Request password reset
 router.post('/forgot-password', authController.forgotPassword);
