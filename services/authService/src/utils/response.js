@@ -57,7 +57,7 @@ export const errorResponse = (res, { message = 'An error occurred', code = 'ERRO
   if (details) {
     response.error.details = details;
   }
-
+  console.log("Status code--",statusCode, "response", response);
   return res.status(statusCode).json(response);
 };
 

@@ -53,6 +53,22 @@ class User extends Model {
   isTwoFactorEnabled() {
     return this.two_factor_enabled;
   }
+
+  /**
+   * Define associations
+   * @param {Object} models - All models
+   */
+  static associate(models) {
+    // User has many activity logs
+    this.hasMany(models.UserActivityLogs,{foreignKey: 'user_id',as: 'activityLogs',onDelete: 'SET NULL'});
+    
+    // Add other associations here as you create models
+    // this.hasMany(models.RefreshToken, {
+    //   foreignKey: 'user_id',
+    //   as: 'refreshTokens',
+    //   onDelete: 'CASCADE'
+    // });
+  }
 }
 
 User.init(
@@ -115,6 +131,12 @@ User.init(
       comment: 'User phone number',
     },
 
+    refresh_token: {
+      type: DataTypes.STRING(255),
+      allowNull: true,
+      comment: 'Refresh token for authentication',
+    },
+    
     avatar_url: {
       type: DataTypes.STRING(255),
       allowNull: true,

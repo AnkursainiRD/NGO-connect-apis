@@ -1,7 +1,9 @@
-import { User } from '#core/models/index.js';
-import { successResponse, errorResponse, createdResponse, conflictResponse, internalErrorResponse } from '#utils/response.js';
+import { User, UserActivityLogs } from '#core/models/index.js';
+import { successResponse, errorResponse, createdResponse, conflictResponse, internalErrorResponse, notFoundResponse } from '#utils/response.js';
 import { generateAndUploadAvatar } from '#utils/localAvatar.js';
+import { generateTokens, excludeKeyFromObject } from '#core/helpers/helper.js';
 import { logger } from '#utils/logger.js';
+import { appConfig } from '#config/app.config.js';
 
 export default class AuthController {
 
@@ -66,11 +68,50 @@ export default class AuthController {
    */
   login = async (req, res) => {
     try {
-      // TODO: Implement login logic
-      return errorResponse(res, {
-        message: 'Login endpoint not yet implemented',
-        code: 'NOT_IMPLEMENTED',
-        statusCode: 501,
+      const { email, password } = req.body;
+
+      const user = await User.findOne({ where: { email } });
+      if(!user){
+        return notFoundResponse(res, 'User not found');
+      }
+
+      const validPassword = await user.comparePassword(password);
+      console.log(user);
+      if(!validPassword){
+        return errorResponse(res, 'Invalid password');
+      }
+
+      const { refreshToken, accessToken } = await generateTokens(user.email, user.id, user.tenant_id, "both");
+      if(!refreshToken || !accessToken){
+        return errorResponse(res, 'Failed to generate tokens');
+      }
+      
+      const userLastLoginAt = await UserActivityLogs.findOne({ where: { user_id: user.id }, order: [["created_at", "DESC"]], limit: 1 });
+
+      await UserActivityLogs.logActivity({
+        user_id: user.id,
+        entity_type: 'login',
+        entity_id: user.id,
+        action: 'login',
+        description: 'User logged in',
+        ip_address: req.ip,
+        user_agent: req.get('User-Agent'),
+      });
+
+
+      user.refresh_token = refreshToken;
+      user.last_login_at = userLastLoginAt ? userLastLoginAt.created_at : null;
+      await user.save();
+      
+      res.cookie('accessToken', accessToken, {
+        httpOnly: true,
+        secure: appConfig.isProduction,
+        sameSite: 'strict',
+        maxAge: 60 * 60 * 1000, // 60 minutes
+      });
+      return successResponse(res, {
+        data: { user: excludeKeyFromObject(user.toJSON(), ['password_hash', 'refresh_token']) },
+        message: 'Login successful',
       });
     } catch (error) {
       logger.error('Login error:', { error: error.message, stack: error.stack });
@@ -84,9 +125,32 @@ export default class AuthController {
    */
   logout = async (req, res) => {
     try {
-      // TODO: Implement logout logic
+      const user_id = req.user.userId;
+      if(!user_id){
+        return notFoundResponse(res, 'User not found');
+      }
+      
+      const user = await User.findOne({ where: { id: user_id } });
+      if(!user){
+        return notFoundResponse(res, 'User not found');
+      }
+      user.refresh_token = null;
+      await user.save();
+      
+      await UserActivityLogs.logActivity({
+        user_id: user.id,
+        entity_type: 'logout',
+        entity_id: user.id,
+        action: 'logout',
+        description: 'User logged out',
+        ip_address: req.ip,
+        user_agent: req.get('User-Agent'),
+      });
+      
+      res.clearCookie('accessToken');
+      res.clearCookie('refreshToken');
       return successResponse(res, {
-        message: 'Logout endpoint not yet implemented',
+        message: 'Logout successful',
       });
     } catch (error) {
       logger.error('Logout error:', { error: error.message, stack: error.stack });
