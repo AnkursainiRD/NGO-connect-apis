@@ -1,4 +1,4 @@
-import { 
+import {
   generateAvatarUploadUrl,
   generateDocumentUploadUrl,
   generateNGOImageUploadUrl,
@@ -6,6 +6,7 @@ import {
 } from '#utils/upload.js';
 import { successResponse, errorResponse, internalErrorResponse } from '#utils/response.js';
 import { User } from '#core/models/index.js';
+import { logger } from '#utils/logger.js';
 
 export default class UploadController {
 
@@ -39,7 +40,7 @@ export default class UploadController {
       });
 
     } catch (error) {
-      console.error('Get avatar upload URL error:', error);
+      logger.error('Get avatar upload URL error:', { error: error.message, stack: error.stack });
       return internalErrorResponse(res, 'Failed to generate upload URL');
     }
   }
@@ -68,7 +69,7 @@ export default class UploadController {
       });
 
     } catch (error) {
-      console.error('Get document upload URL error:', error);
+      logger.error('Get document upload URL error:', { error: error.message, stack: error.stack });
       return internalErrorResponse(res, 'Failed to generate upload URL');
     }
   }
@@ -97,7 +98,7 @@ export default class UploadController {
       });
 
     } catch (error) {
-      console.error('Get NGO image upload URL error:', error);
+      logger.error('Get NGO image upload URL error:', { error: error.message, stack: error.stack });
       return internalErrorResponse(res, 'Failed to generate upload URL');
     }
   }
@@ -149,7 +150,7 @@ export default class UploadController {
       });
 
     } catch (error) {
-      console.error('Update avatar URL error:', error);
+      logger.error('Update avatar URL error:', { error: error.message, stack: error.stack });
       return internalErrorResponse(res, 'Failed to update avatar');
     }
   }

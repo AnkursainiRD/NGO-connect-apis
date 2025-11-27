@@ -6,6 +6,7 @@ import { errorHandler } from '#api/middlewares/error.middleware.js';
 import { notFoundHandler } from '#api/middlewares/notFound.middleware.js';
 import { logger } from '#utils/logger.js';
 import { healthCheck } from '#utils/healthCheck.js';
+import { testDatabaseConnection, syncDatabase } from '#config/database.js';
 
 /**
  * Initialize the Express application with all necessary configurations
@@ -14,6 +15,13 @@ import { healthCheck } from '#utils/healthCheck.js';
 export const initializeApp = async (app) => {
   try {
     logger.info('🔧 Initializing Auth Service...');
+
+    // Test and sync database
+    await testDatabaseConnection();
+    if (appConfig.env === 'development') {
+      await syncDatabase(false); // Sync without dropping tables
+      logger.info('✅ Database synced (development mode)');
+    }
 
     // Trust proxy for deployment behind reverse proxy (nginx, load balancers)
     app.set('trust proxy', 1);
@@ -42,7 +50,7 @@ export const initializeApp = async (app) => {
 
     logger.info('✅ Auth Service initialization complete');
   } catch (error) {
-    logger.error('❌ Failed to initialize Auth Service:', error);
+    logger.error('❌ Failed to initialize Auth Service:', { error: error.message, stack: error.stack });
     throw error;
   }
 };

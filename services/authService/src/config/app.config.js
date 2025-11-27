@@ -1,6 +1,7 @@
 import dotenv from 'dotenv';
 
-dotenv.config();
+// Load environment variables quietly (already loaded in index.js, but safe to call again)
+dotenv.config({ quiet: true });
 
 /**
  * Application configuration
