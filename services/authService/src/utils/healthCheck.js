@@ -1,4 +1,5 @@
 import { appConfig } from '#config/app.config.js';
+import sequelize from '#config/database.js';
 
 /**
  * Health check endpoint handler
@@ -19,9 +20,9 @@ export const healthCheck = async (req, res) => {
     },
   };
 
-  // Determine overall health
+  // Determine overall health (ignore not_configured services)
   const isHealthy = Object.values(healthStatus.checks).every(
-    (check) => check.status === 'healthy'
+    (check) => check.status === 'healthy' || check.status === 'not_configured' || check.status === 'warning'
   );
 
   healthStatus.status = isHealthy ? 'healthy' : 'degraded';
@@ -35,16 +36,18 @@ export const healthCheck = async (req, res) => {
  */
 const checkDatabase = async () => {
   try {
-    // TODO: Implement actual database ping
-    // const result = await db.ping();
+    // Ping database by running a simple query
+    await sequelize.authenticate();
+
     return {
       status: 'healthy',
       message: 'Database connection is healthy',
+      responseTime: 'OK',
     };
   } catch (error) {
     return {
       status: 'unhealthy',
-      message: error.message,
+      message: error.message || 'Database connection failed',
     };
   }
 };
@@ -54,16 +57,24 @@ const checkDatabase = async () => {
  */
 const checkRedis = async () => {
   try {
-    // TODO: Implement actual Redis ping
-    // const result = await redis.ping();
+    // Redis is optional - if not configured, mark as not applicable
+    if (!appConfig.redis.host || appConfig.redis.host === 'localhost') {
+      return {
+        status: 'not_configured',
+        message: 'Redis not configured (optional)',
+      };
+    }
+
+    // If Redis client is available in the future, ping it here
+    // For now, mark as not implemented
     return {
-      status: 'healthy',
-      message: 'Redis connection is healthy',
+      status: 'not_configured',
+      message: 'Redis health check not implemented yet',
     };
   } catch (error) {
     return {
       status: 'unhealthy',
-      message: error.message,
+      message: error.message || 'Redis connection failed',
     };
   }
 };

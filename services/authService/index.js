@@ -16,9 +16,10 @@ import { createServer} from 'http';
 import { initializeApp } from './src/app.js';
 import { logger } from '#utils/logger.js';
 import { appConfig } from '#config/app.config.js';
+import { testDatabaseConnection, closeDatabaseConnection } from '#config/database.js';
 
-// Load environment variables
-dotenv.config();
+// Load environment variables (suppress logs)
+dotenv.config({ quiet: true });
 
 const app = express();
 const httpServer = createServer(app)
@@ -28,15 +29,19 @@ const httpServer = createServer(app)
 // GRACEFUL SHUTDOWN
 // ═══════════════════════════════════════════════════════════════════════════
 
-const gracefulShutdown = (exitCode = 0) => {
+const gracefulShutdown = async (exitCode = 0) => {
   logger.info('🛑 Initiating graceful shutdown...');
-  
-  httpServer.close(() => {
+
+  httpServer.close(async () => {
     logger.info('✅ HTTP server closed');
+
+    // Close database connections
+    await closeDatabaseConnection();
+
     logger.info('👋 Shutdown complete. Exiting...');
     process.exit(exitCode);
   });
-  
+
   // Force shutdown after 30 seconds
   setTimeout(() => {
     logger.error('⚠️ Forced shutdown due to timeout');
@@ -49,14 +54,12 @@ const gracefulShutdown = (exitCode = 0) => {
 // ═══════════════════════════════════════════════════════════════════════════
 
 process.on('uncaughtException', (error) => {
-  console.error('💥 Uncaught Exception:', error);
-  logger.error('💥 Uncaught Exception:', error);
+  logger.error('💥 Uncaught Exception:', { error: error.message, stack: error.stack });
   gracefulShutdown(1);
 });
 
 process.on('unhandledRejection', (reason, promise) => {
-  console.error('💥 Unhandled Rejection:', reason);
-  logger.error('💥 Unhandled Rejection at:', promise, 'reason:', reason);
+  logger.error('💥 Unhandled Rejection:', { reason, promise });
   gracefulShutdown(1);
 });
 
@@ -80,6 +83,9 @@ const startServer = async () => {
     logger.info(`📍 Environment: ${appConfig.env}`);
     logger.info(`📍 Node Version: ${process.version}`);
 
+    // Test database connection before starting
+    await testDatabaseConnection();
+
     // Initialize application (middlewares, routes, error handlers)
     await initializeApp(app);
 
@@ -94,14 +100,12 @@ const startServer = async () => {
     });
 
     httpServer.on('error', (error) => {
-      console.error('💥 HTTP Server Error:', error);
-      logger.error('💥 HTTP Server Error:', error);
+      logger.error('💥 HTTP Server Error:', { error: error.message, stack: error.stack });
       process.exit(1);
     });
 
   } catch (error) {
-    console.error('💥 Failed to start server:', error);
-    logger.error('💥 Failed to start server:', error);
+    logger.error('💥 Failed to start server:', { error: error.message, stack: error.stack });
     process.exit(1);
   }
 };

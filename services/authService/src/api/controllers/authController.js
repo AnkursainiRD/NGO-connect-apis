@@ -1,6 +1,7 @@
 import { User } from '#core/models/index.js';
 import { successResponse, errorResponse, createdResponse, conflictResponse, internalErrorResponse } from '#utils/response.js';
 import { generateAndUploadAvatar } from '#utils/localAvatar.js';
+import { logger } from '#utils/logger.js';
 
 export default class AuthController {
 
@@ -43,7 +44,7 @@ export default class AuthController {
         newUser.avatar_url = avatarUrl;
         await newUser.save();
       } catch (avatarError) {
-        console.error('Avatar upload failed, continuing without avatar:', avatarError);
+        logger.error('Avatar upload failed, continuing without avatar:', { error: avatarError.message });
         // Continue even if avatar upload fails - user is already created
       }
       
@@ -54,7 +55,7 @@ export default class AuthController {
       });
       
     } catch (error) {
-      console.error('Register error:', error);
+      logger.error('Register error:', { error: error.message, stack: error.stack });
       return internalErrorResponse(res, 'Failed to register user');
     }
   }
@@ -72,7 +73,7 @@ export default class AuthController {
         statusCode: 501,
       });
     } catch (error) {
-      console.error('Login error:', error);
+      logger.error('Login error:', { error: error.message, stack: error.stack });
       return internalErrorResponse(res, 'Failed to login');
     }
   }
@@ -88,7 +89,7 @@ export default class AuthController {
         message: 'Logout endpoint not yet implemented',
       });
     } catch (error) {
-      console.error('Logout error:', error);
+      logger.error('Logout error:', { error: error.message, stack: error.stack });
       return internalErrorResponse(res, 'Failed to logout');
     }
   }
@@ -106,7 +107,7 @@ export default class AuthController {
         statusCode: 501,
       });
     } catch (error) {
-      console.error('Refresh token error:', error);
+      logger.error('Refresh token error:', { error: error.message, stack: error.stack });
       return internalErrorResponse(res, 'Failed to refresh token');
     }
   }
@@ -122,7 +123,7 @@ export default class AuthController {
         message: 'Forgot password endpoint not yet implemented',
       });
     } catch (error) {
-      console.error('Forgot password error:', error);
+      logger.error('Forgot password error:', { error: error.message, stack: error.stack });
       return internalErrorResponse(res, 'Failed to process password reset request');
     }
   }
@@ -138,7 +139,7 @@ export default class AuthController {
         message: 'Reset password endpoint not yet implemented',
       });
     } catch (error) {
-      console.error('Reset password error:', error);
+      logger.error('Reset password error:', { error: error.message, stack: error.stack });
       return internalErrorResponse(res, 'Failed to reset password');
     }
   }
@@ -154,7 +155,7 @@ export default class AuthController {
         message: 'Email verification endpoint not yet implemented',
       });
     } catch (error) {
-      console.error('Verify email error:', error);
+      logger.error('Verify email error:', { error: error.message, stack: error.stack });
       return internalErrorResponse(res, 'Failed to verify email');
     }
   }
@@ -172,7 +173,7 @@ export default class AuthController {
         statusCode: 501,
       });
     } catch (error) {
-      console.error('Get current user error:', error);
+      logger.error('Get current user error:', { error: error.message, stack: error.stack });
       return internalErrorResponse(res, 'Failed to get current user');
     }
   }

@@ -19,22 +19,21 @@ class Logger {
    * Format log message
    */
   format(level, message, meta = {}) {
-    const timestamp = new Date().toISOString();
-    const logObject = {
-      timestamp,
-      level: level.toUpperCase(),
-      service: appConfig.serviceName,
-      message,
-      ...meta,
-    };
+    // Simple timestamp format: YYYY-MM-DD HH:MM:SS
+    const now = new Date();
+    const timestamp = now.toLocaleString('en-CA', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: false
+    }).replace(',', '');
 
-    if (appConfig.logging.format === 'json') {
-      return JSON.stringify(logObject);
-    }
-
-    // Pretty format for development
-    const metaStr = Object.keys(meta).length > 0 ? ` ${JSON.stringify(meta)}` : '';
-    return `[${timestamp}] [${level.toUpperCase()}] [${appConfig.serviceName}] ${message}${metaStr}`;
+    // Pretty format: timestamp | service | message
+    const metaStr = (level === 'error' && Object.keys(meta).length > 0) ? ` ${JSON.stringify(meta)}` : '';
+    return `${timestamp} | ${appConfig.serviceName} | ${message}${metaStr}`;
   }
 
   /**

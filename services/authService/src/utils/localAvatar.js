@@ -158,7 +158,7 @@ export const generateAndUploadAvatar = async (userId, name, options = {}) => {
     return uploadResult.secure_url;
 
   } catch (error) {
-    console.error('Failed to generate and upload avatar:', error);
+    logger.error('Failed to generate and upload avatar:', { error: error.message, stack: error.stack });
     throw new Error('Failed to generate avatar');
   }
 };
@@ -195,10 +195,11 @@ export const generateRoleAvatar = async (userId, name, role = 'donor') => {
  * @param {string} name - User's name
  * @param {string} filepath - File path to save
  */
-export const saveAvatarToFile = (name, filepath) => {
+export const saveAvatarToFile = async (name, filepath) => {
+  const { logger } = await import('#utils/logger.js');
   const imageBuffer = generateAvatarImage(name);
   fs.writeFileSync(filepath, imageBuffer);
-  console.log('Avatar saved locally:', filepath);
+  logger.info('Avatar saved locally:', { filepath });
 };
 
 export default {
