@@ -43,7 +43,8 @@ export const successResponse = (res, { data = null, message = 'Success', statusC
  * @param {number} options.statusCode - HTTP status code (default: 400)
  * @param {Array|Object} options.details - Additional error details
  */
-export const errorResponse = (res, { message = 'An error occurred', code = 'ERROR', statusCode = 400, details = null }) => {
+export const errorResponse = (res, { message, code = 'ERROR', statusCode = 400, details = null }) => {
+  console.log("error message", message);
   const response = {
     success: false,
     error: {
@@ -57,7 +58,7 @@ export const errorResponse = (res, { message = 'An error occurred', code = 'ERRO
   if (details) {
     response.error.details = details;
   }
-  console.log("Status code--",statusCode, "response", response);
+
   return res.status(statusCode).json(response);
 };
 
@@ -136,6 +137,20 @@ export const notFoundResponse = (res, message = 'Resource not found') => {
 };
 
 /**
+ * Bad Request Response (400)
+ * @param {Object} res - Express response object
+ * @param {string} message - Error message
+ */
+export const badRequestResponse = (res, message = 'Bad request') => {
+  return errorResponse(res, {
+    message,
+    code: 'BAD_REQUEST',
+    statusCode: 400,
+  });
+};
+
+
+/**
  * Conflict Response (409)
  * @param {Object} res - Express response object
  * @param {string} message - Error message
@@ -205,4 +220,5 @@ export default {
   conflict: conflictResponse,
   internalError: internalErrorResponse,
   paginated: paginatedResponse,
+  badRequest: badRequestResponse,
 };

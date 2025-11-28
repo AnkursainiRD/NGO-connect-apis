@@ -31,6 +31,8 @@ export const appConfig = {
     refreshTokenExpiry: process.env.JWT_REFRESH_EXPIRY || '7d',
     issuer: process.env.JWT_ISSUER || 'ngoconnect-auth',
     audience: process.env.JWT_AUDIENCE || 'ngoconnect-api',
+    resetPasswordTokenSecret: process.env.JWT_RESET_PASSWORD_TOKEN_SECRET || 'your-reset-password-token-secret-change-in-production',
+    resetPasswordTokenExpiry: process.env.JWT_RESET_PASSWORD_TOKEN_EXPIRY || '30m',
   },
 
   // Database configuration (if needed for auth service)
@@ -78,6 +80,7 @@ export const appConfig = {
     notificationServiceUrl: process.env.NOTIFICATION_SERVICE_URL || 'http://localhost:3003',
   },
 
+
   // Cloudinary configuration
   cloudinary: {
     cloudName: process.env.CLOUDINARY_CLOUD_NAME || '',
@@ -87,6 +90,16 @@ export const appConfig = {
     folder: process.env.CLOUDINARY_FOLDER || 'ngo-connect/avatars',
     maxFileSize: parseInt(process.env.MAX_FILE_SIZE || '5242880', 10), // 5MB default
     allowedFormats: ['jpg', 'jpeg', 'png', 'gif', 'webp'],
+  },
+
+  // SMTP Email configuration
+  smtp: {
+    host: process.env.SMTP_HOST || 'smtp.gmail.com',
+    port: parseInt(process.env.SMTP_PORT || '587', 10),
+    secure: process.env.SMTP_SECURE === 'true', // true for 465, false for other ports
+    user: process.env.SMTP_USER || '',
+    pass: process.env.SMTP_PASS || '',
+    from: process.env.SMTP_FROM || process.env.SMTP_USER || 'noreply@ngoconnect.com',
   },
 
   // Feature flags

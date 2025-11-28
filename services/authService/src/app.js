@@ -6,7 +6,10 @@ import { errorHandler } from '#api/middlewares/error.middleware.js';
 import { notFoundHandler } from '#api/middlewares/notFound.middleware.js';
 import { logger } from '#utils/logger.js';
 import { healthCheck } from '#utils/healthCheck.js';
-import { testDatabaseConnection, syncDatabase } from '#config/database.js';
+import { syncDatabase } from '#config/database.js';
+import cookieParser from 'cookie-parser';
+
+
 
 /**
  * Initialize the Express application with all necessary configurations
@@ -16,9 +19,9 @@ export const initializeApp = async (app) => {
   try {
     logger.info('🔧 Initializing Auth Service...');
 
-    // Test and sync database
-    await testDatabaseConnection();
-    if (appConfig.env === 'development') {
+    // Database sync in development (connection already tested in index.js)
+    // Only sync if DB_SYNC environment variable is explicitly set to 'true'
+    if (appConfig.env === 'development' && process.env.DB_SYNC === 'true') {
       await syncDatabase(false); // Sync without dropping tables
       logger.info('✅ Database synced (development mode)');
     }
@@ -28,6 +31,9 @@ export const initializeApp = async (app) => {
 
     // Disable x-powered-by header for security
     app.disable('x-powered-by');
+
+    // Parse cookies
+    app.use(cookieParser());
 
     // Setup global middlewares (CORS, body-parser, security, etc.)
     setupMiddlewares(app);
