@@ -31,8 +31,13 @@ class Logger {
       hour12: false
     }).replace(',', '');
 
-    // Pretty format: timestamp | service | message
-    const metaStr = (level === 'error' && Object.keys(meta).length > 0) ? ` ${JSON.stringify(meta)}` : '';
+    // Pretty format with indented JSON for better readability
+    let metaStr = '';
+    if (Object.keys(meta).length > 0) {
+      // Format JSON with 2-space indentation for readability
+      metaStr = '\n' + JSON.stringify(meta, null, 2);
+    }
+    
     return `${timestamp} | ${appConfig.serviceName} | ${message}${metaStr}`;
   }
 

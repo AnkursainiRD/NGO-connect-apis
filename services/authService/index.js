@@ -17,6 +17,7 @@ import { initializeApp } from './src/app.js';
 import { logger } from '#utils/logger.js';
 import { appConfig } from '#config/app.config.js';
 import { testDatabaseConnection, closeDatabaseConnection } from '#config/database.js';
+import { connectRedis, disconnectRedis } from '#config/redis.js';
 
 // Load environment variables (suppress logs)
 dotenv.config({ quiet: true });
@@ -35,8 +36,9 @@ const gracefulShutdown = async (exitCode = 0) => {
   httpServer.close(async () => {
     logger.info('✅ HTTP server closed');
 
-    // Close database connections
+    // Close database and Redis connections
     await closeDatabaseConnection();
+    await disconnectRedis();
 
     logger.info('👋 Shutdown complete. Exiting...');
     process.exit(exitCode);
@@ -85,6 +87,9 @@ const startServer = async () => {
 
     // Test database connection before starting
     await testDatabaseConnection();
+
+    // Connect to Redis (optional - service continues without it)
+    await connectRedis();
 
     // Initialize application (middlewares, routes, error handlers)
     await initializeApp(app);

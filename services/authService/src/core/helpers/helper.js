@@ -15,7 +15,7 @@ const generateTokens = (email, userId, tenantId, type) => {
         if(!refreshToken){
            throw error;
         }
-        return refreshToken;
+        return {"refreshToken":refreshToken};
     }else if(type === "access"){  
 
         const accessToken = jwt.sign({
@@ -29,7 +29,7 @@ const generateTokens = (email, userId, tenantId, type) => {
         if(!accessToken){
             throw error;
         }
-        return accessToken;
+        return {"accessToken":accessToken};
     }else if(type === "both"){
          const refreshToken = jwt.sign({
             email,
@@ -46,14 +46,14 @@ const generateTokens = (email, userId, tenantId, type) => {
             expiresIn: appConfig.jwt.accessTokenExpiry
         })
 
-        return {accessToken, refreshToken}
+        return {"accessToken":accessToken, "refreshToken":refreshToken}
     }
     } catch (error) {
         throw error;
     }
 }   
 
-const regenrateAccessToken = (refreshToken, email, userId, tenantId, res) =>{
+const regenrateAccessToken = (refreshToken, email, userId, tenantId) =>{
     try {
         const decoded = jwt.verify(refreshToken, appConfig.jwt.refreshTokenSecret);
         if(decoded.email !== email || decoded.userId !== userId || decoded.tenantId !== tenantId){
@@ -76,8 +76,58 @@ const excludeKeyFromObject = (object, keys) => {
     return filteredObject;
 }
 
+const checkTokenExpiry = (token, type) => {
+    try {
+        if(type==="refresh"){
+            const decoded = jwt.verify(token, appConfig.jwt.refreshTokenSecret);
+            console.log(decoded);   
+            if(!decoded){
+                throw error;
+            }
+            const expiryDate = decoded.exp * 1000;
+            const currentDate = Date.now();
+            return expiryDate < currentDate;
+        }else{
+            const decoded = jwt.verify(token, appConfig.jwt.accessTokenSecret);
+            if(!decoded){
+                throw error;
+            }
+            const expiryDate = decoded.exp * 1000;
+            const currentDate = Date.now();
+            return expiryDate < currentDate;
+        }
+    } catch (error) {
+        return false;
+    }
+}
+
+const generateResetPasswordToken = (email, userId, tenantId) =>{
+    try {
+        const resetPasswordToken = jwt.sign({
+            email,
+            userId,
+            tenantId
+        }, appConfig.jwt.resetPasswordTokenSecret, {
+            expiresIn: appConfig.jwt.resetPasswordTokenExpiry
+        })
+        if(!resetPasswordToken){
+            throw error;
+        }
+        return {"resetPasswordToken":resetPasswordToken};
+    } catch (error) {
+        throw error;
+    }
+}
+
+const generateOTP = () => {
+    const otp = Math.floor(100000 + Math.random() * 900000);
+    return otp;
+}
 export {
     generateTokens,
     regenrateAccessToken,
-    excludeKeyFromObject
+    excludeKeyFromObject,
+    checkTokenExpiry,
+    generateResetPasswordToken,
+    generateOTP
 }
