@@ -60,7 +60,18 @@ class User extends Model {
    */
   static associate(models) {
     // User has many activity logs
-    this.hasMany(models.UserActivityLogs,{foreignKey: 'user_id',as: 'activityLogs',onDelete: 'SET NULL'});
+    this.hasMany(models.UserActivityLogs, {
+      foreignKey: 'user_id',
+      as: 'activityLogs',
+      onDelete: 'SET NULL'
+    });
+    
+    // User has many auth providers (OAuth connections)
+    this.hasMany(models.UserAuthProviders, {
+      foreignKey: 'user_id',
+      as: 'authProviders',
+      onDelete: 'CASCADE'
+    });
     
     // Add other associations here as you create models
     // this.hasMany(models.RefreshToken, {
@@ -91,7 +102,7 @@ User.init(
       allowNull: true,
       validate: {
         len: {
-          args: [2, 100],
+          args: [1, 100],
           msg: 'Name must be between 2 and 100 characters',
         },
       },
@@ -169,7 +180,7 @@ User.init(
       defaultValue: 'local',
       validate: {
         isIn: {
-          args: [['local', 'google', 'facebook', 'github', 'microsoft']],
+          args: [['local', 'google', 'facebook', 'github', 'microsoft', 'firebase']],
           msg: 'Invalid auth provider',
         },
       },

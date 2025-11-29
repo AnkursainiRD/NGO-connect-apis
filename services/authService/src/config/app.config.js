@@ -18,7 +18,7 @@ export const appConfig = {
   cors: {
     origin: process.env.CORS_ORIGIN 
       ? process.env.CORS_ORIGIN.split(',') 
-      : ['http://localhost:3000', 'http://localhost:5173'],
+      : ['http://localhost:3000', 'http://localhost:5173', 'https://llqh65q9-5500.inc1.devtunnels.ms'],
     credentials: true,
     optionsSuccessStatus: 200,
   },
@@ -100,6 +100,13 @@ export const appConfig = {
     user: process.env.SMTP_USER || '',
     pass: process.env.SMTP_PASS || '',
     from: process.env.SMTP_FROM || process.env.SMTP_USER || 'noreply@ngoconnect.com',
+  },
+
+  // Firebase configuration
+  firebase: {
+    projectId: process.env.FIREBASE_PROJECT_ID || '',
+    clientEmail: process.env.FIREBASE_CLIENT_EMAIL || '',
+    privateKey: process.env.FIREBASE_PRIVATE_KEY || '',
   },
 
   // Feature flags

@@ -1,7 +1,7 @@
-import { User, UserActivityLogs } from '#core/models/index.js';
+import { User, UserActivityLogs, UserAuthProviders } from '#core/models/index.js';
 import { successResponse, errorResponse, createdResponse, conflictResponse, internalErrorResponse, notFoundResponse, badRequestResponse } from '#utils/response.js';
 import { generateAndUploadAvatar } from '#utils/localAvatar.js';
-import { generateTokens, excludeKeyFromObject, checkTokenExpiry, generateResetPasswordToken, generateOTP } from '#core/helpers/helper.js';
+import { generateTokens, excludeKeyFromObject, checkTokenExpiry, generateResetPasswordToken, generateOTP, verifyFirebaseToken } from '#core/helpers/helper.js';
 import {setCache, getCache, delCache } from '#core/helpers/redis.helper.js'
 import { logger } from '#utils/logger.js';
 import { appConfig } from '#config/app.config.js';
@@ -91,11 +91,11 @@ export default class AuthController {
       }
       
       const userLastLoginAt = await UserActivityLogs.findOne({ where: { user_id: user.id }, order: [["created_at", "DESC"]], limit: 1 });
-
       await UserActivityLogs.logActivity({
         user_id: user.id,
         entity_type: 'user',
         entity_id: user.id,
+        tenant_id: user.tenant_id,
         action: 'login',
         description: 'User logged in',
         ip_address: req.ip,
@@ -120,12 +120,98 @@ export default class AuthController {
         sameSite: 'strict',
         maxAge: appConfig.refreshTokenExpiry, // 7 days
       });
+
+      await setCache(`user-${user.id}`, JSON.stringify(user.toJSON()), 60 * 60 * 24);
       return successResponse(res, {
         data: { user: excludeKeyFromObject(user.toJSON(), ['password_hash', 'refresh_token']) },
         message: 'Login successful',
       });
     } catch (error) {
       logger.error('Login error:', { error: error.message, stack: error.stack });
+      return internalErrorResponse(res, 'Failed to login');
+    }
+  }
+
+  socialLogin = async (req, res) => {
+    try{
+      const token = req.user.oAuthToken;
+      const { tenant_id } = req.body;
+
+      if(!token){
+        return unauthorizedResponse(res, 'Unauthorized');
+      }
+
+      const userData = await verifyFirebaseToken(token);
+      if(!userData){
+        return unauthorizedResponse(res, 'Unauthorized');
+      }
+
+      if(!tenant_id){
+        return badRequestResponse(res, 'Tenant ID is required');
+      }
+      const existedUser = await User.findOne({ where: { email: userData.email } });
+      let user;
+      if(!existedUser){
+        user = await User.create({
+          name: userData.name,
+          email: userData.email,
+          password_hash: null,
+          email_verified: true,
+          phone: userData.phoneNumber? userData.phoneNumber : null,
+          phone_verified: userData.phoneNumber? true : false,
+          avatar_url: userData.picture? userData.picture : null,
+          auth_provider: 'firebase',
+          two_factor_enabled: true,
+          tenant_id,
+        });
+
+        const user_auth_provider = await UserAuthProviders.create({
+          user_id: user.id,
+          provider_name: 'firebase',
+          provider_user_id: userData.user_id,
+          email: userData.email,
+          provider_profile_picture: userData.picture
+        });
+      }
+      user = existedUser? existedUser : user;
+      await UserActivityLogs.create({
+        user_id: user.id,
+        ip_address: req.ip,
+        entity_type: 'user',
+        entity_id: user.id,
+        tenant_id: tenant_id,
+        action: 'social_login',
+        description: 'User logged in',
+        user_agent: req.headers['user-agent'],
+      });
+      
+      const { refreshToken, accessToken } = generateTokens(user.email, user.id, tenant_id, "both");
+      if(!refreshToken || !accessToken){
+        return errorResponse(res, { message: 'Failed to generate tokens' });
+      }
+
+      user.refresh_token = refreshToken;
+      await user.save();
+
+      res.cookie('accessToken', accessToken, {
+        httpOnly: true,
+        secure: appConfig.isProduction,
+        sameSite: 'strict',
+        maxAge: appConfig.accessTokenExpiry, // 60 minutes
+      });
+
+      res.cookie('refreshToken', refreshToken, {
+        httpOnly: true,
+        secure: appConfig.isProduction,
+        sameSite: 'strict',
+        maxAge: appConfig.refreshTokenExpiry, // 7 days
+      });
+      return successResponse(res, {
+        data: { user: excludeKeyFromObject(user.toJSON(), ['password_hash', 'refresh_token']) },
+        message: 'Login successful',
+      });
+    }catch(error){
+      logger.error('Social login error:', { error: error.message, stack: error.stack });
       return internalErrorResponse(res, 'Failed to login');
     }
   }
@@ -150,6 +236,7 @@ export default class AuthController {
       
       await UserActivityLogs.logActivity({
         user_id: user.id,
+        tenant_id: user.tenant_id,
         entity_type: 'user',
         entity_id: user.id,
         action: 'logout',

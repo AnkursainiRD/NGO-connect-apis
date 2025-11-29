@@ -8,6 +8,7 @@ import { logger } from '#utils/logger.js';
 import { healthCheck } from '#utils/healthCheck.js';
 import { syncDatabase } from '#config/database.js';
 import cookieParser from 'cookie-parser';
+import admin from 'firebase-admin';
 
 
 
@@ -25,6 +26,11 @@ export const initializeApp = async (app) => {
       await syncDatabase(false); // Sync without dropping tables
       logger.info('✅ Database synced (development mode)');
     }
+
+    // Initialize Firebase Admin SDK
+    // admin.initializeApp({
+    //   credential: admin.credential.applicationDefault(),
+    // });
 
     // Trust proxy for deployment behind reverse proxy (nginx, load balancers)
     app.set('trust proxy', 1);
