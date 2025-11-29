@@ -1,5 +1,7 @@
 import jwt from 'jsonwebtoken';
 import { appConfig } from '#config/app.config.js';
+import { firebaseAdmin } from '#config/firebase.config.js';
+import { logger } from '#utils/logger.js';
 
 const generateTokens = (email, userId, tenantId, type) => {
     try {
@@ -123,11 +125,28 @@ const generateOTP = () => {
     const otp = Math.floor(100000 + Math.random() * 900000);
     return otp;
 }
+
+/**
+ * Utility: Verify Firebase ID Token
+ */
+const verifyFirebaseToken = async (idToken) => {
+  try {
+    return await firebaseAdmin.auth().verifyIdToken(idToken);
+  } catch (error) {
+    logger.error("❌ Firebase token verification failed:", {
+      error: error.message,
+    });
+    throw error;
+  }
+};
+
+
 export {
     generateTokens,
     regenrateAccessToken,
     excludeKeyFromObject,
     checkTokenExpiry,
     generateResetPasswordToken,
-    generateOTP
+    generateOTP,
+    verifyFirebaseToken
 }

@@ -203,8 +203,32 @@ export const authorize = (allowedRoles = []) => {
   };
 };
 
+export const oAuth2Token = (req, res, next) => {
+  try {
+    
+    let token = null;
+    if (req.headers.authorization) {
+      const authHeader = req.headers.authorization;
+      if (authHeader.startsWith('Bearer ')) {
+        token = authHeader.substring(7);
+      }
+    }
+    req.user = {
+      oAuthToken: token,
+    };
+    next();
+  } catch (error) {
+    logger.error('OAuth token verification error:', {
+      error: error.message,
+      stack: error.stack,
+    });
+    return forbiddenResponse(res, 'OAuth token verification failed');
+  }
+}
+
 export default {
   authenticate,
   optionalAuthenticate,
   authorize,
+  oAuth2Token
 };

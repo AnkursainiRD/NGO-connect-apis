@@ -16,6 +16,7 @@ import sequelize, {
 } from '#config/database.js';
 import User from './User.model.js';
 import { UserActivityLogs } from './UserActivityLogs.model.js';
+import UserAuthProviders from './UserAuthProviders.model.js';
 // Import other models here as you create them
 // import RefreshToken from './RefreshToken.model.js';
 // import PasswordResetToken from './PasswordResetToken.model.js';
@@ -33,6 +34,7 @@ const setupAssociations = () => {
   const models = {
     User,
     UserActivityLogs,
+    UserAuthProviders,
     // Add other models here
   };
 
@@ -62,6 +64,7 @@ export {
   // Models
   User,
   UserActivityLogs,
+  UserAuthProviders,
   // Add other models here as you create them
   // RefreshToken,
   // PasswordResetToken,
@@ -77,5 +80,6 @@ export default {
   closeDatabaseConnection,
   User,
   UserActivityLogs,
+  UserAuthProviders,
   // Add other models here
 };

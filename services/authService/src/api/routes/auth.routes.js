@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import AuthController from '#api/controllers/authController.js';
 import { registerValidator, loginValidator } from '#api/validators/auth.validator.js';
-import { authenticate } from '#api/middlewares/auth.middleware.js';
+import { authenticate, oAuth2Token } from '#api/middlewares/auth.middleware.js';
 
 const router = Router();
 const authController = new AuthController();
@@ -37,5 +37,8 @@ router.post('/verify-email', authController.verifyEmail);
 
 // GET /api/v1/auth/get-current-user - Get current user info (protected)
 router.get('/get-current-user', authenticate, authController.getCurrentUser);
+
+// POST /api/v1/auth/social-login - Social login 
+router.post('/social-login', oAuth2Token, authController.socialLogin);
 
 export { router as authRoutes };
