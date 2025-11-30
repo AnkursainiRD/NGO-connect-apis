@@ -17,6 +17,9 @@ import sequelize, {
 import User from './User.model.js';
 import { UserActivityLogs } from './UserActivityLogs.model.js';
 import UserAuthProviders from './UserAuthProviders.model.js';
+import Role from './Role.model.js';
+import Permission from './Permission.model.js';
+import RolePermission from './RolePermission.model.js';
 // Import other models here as you create them
 // import RefreshToken from './RefreshToken.model.js';
 // import PasswordResetToken from './PasswordResetToken.model.js';
@@ -35,6 +38,9 @@ const setupAssociations = () => {
     User,
     UserActivityLogs,
     UserAuthProviders,
+    Role,
+    Permission,
+    RolePermission,
     // Add other models here
   };
 
@@ -65,6 +71,9 @@ export {
   User,
   UserActivityLogs,
   UserAuthProviders,
+  Role,
+  Permission,
+  RolePermission,
   // Add other models here as you create them
   // RefreshToken,
   // PasswordResetToken,
@@ -81,5 +90,8 @@ export default {
   User,
   UserActivityLogs,
   UserAuthProviders,
+  Role,
+  Permission,
+  RolePermission,
   // Add other models here
 };

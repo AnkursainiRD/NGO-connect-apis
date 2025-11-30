@@ -55,10 +55,71 @@ class User extends Model {
   }
 
   /**
+   * Check if user has a specific role
+   * @param {string} roleName - Role name to check
+   * @returns {boolean}
+   */
+  async hasRole(roleName) {
+    if (!this.role) {
+      await this.reload({ include: ['role'] });
+    }
+    return this.role?.role_name === roleName;
+  }
+
+  /**
+   * Check if user has a role with hierarchy level >= specified role
+   * @param {string} roleName - Role name to check against
+   * @param {Object} models - Models object to access Role model
+   * @returns {Promise<boolean>}
+   */
+  async hasRoleOrHigher(roleName, models) {
+    if (!this.role) {
+      await this.reload({ include: ['role'] });
+    }
+    
+    const targetRole = await models.Role.findOne({ where: { role_name: roleName } });
+    if (!targetRole) return false;
+    
+    return this.role?.hierarchy_level >= targetRole.hierarchy_level;
+  }
+
+  /**
+   * Check if user has a specific permission
+   * @param {string} permissionName - Permission name (e.g., 'users.create')
+   * @returns {Promise<boolean>}
+   */
+  async hasPermission(permissionName) {
+    if (!this.role) {
+      await this.reload({ include: [{ association: 'role', include: ['permissions'] }] });
+    }
+    
+    return this.role?.permissions?.some(p => p.permission_name === permissionName) || false;
+  }
+
+  /**
+   * Get all user permissions
+   * @returns {Promise<Array>}
+   */
+  async getPermissions() {
+    if (!this.role) {
+      await this.reload({ include: [{ association: 'role', include: ['permissions'] }] });
+    }
+    
+    return this.role?.permissions || [];
+  }
+
+  /**
    * Define associations
    * @param {Object} models - All models
    */
   static associate(models) {
+    // User belongs to a Role
+    this.belongsTo(models.Role, {
+      foreignKey: 'role_id',
+      as: 'role',
+      onDelete: 'SET NULL'
+    });
+
     // User has many activity logs
     this.hasMany(models.UserActivityLogs, {
       foreignKey: 'user_id',
@@ -168,17 +229,16 @@ User.init(
       comment: 'Whether email is verified',
     },
 
-    role:{
-      type: DataTypes.STRING(50),
-      allowNull: false,
-      defaultValue: 'user',
-      validate: {
-        isIn: {
-          args: [['user','admin','super_admin','manager','project_manager','ngo_manager','volunteer', 'doner']],
-          msg: 'Invalid role',
-        },
+    role_id: {
+      type: DataTypes.INTEGER,
+      allowNull: true, // Nullable initially for migration purposes
+      references: {
+        model: 'roles',
+        key: 'id',
       },
-      comment: 'User role (user, admin, super_admin, manager, project_manager, ngo_manager, volunteer, doner)',
+      onDelete: 'SET NULL',
+      onUpdate: 'CASCADE',
+      comment: 'Foreign key to roles table',
     },
 
     last_login_at: {
