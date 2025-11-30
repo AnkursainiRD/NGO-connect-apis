@@ -8,7 +8,8 @@
     "#utils/*": "./src/utils/*",
     "#config/*": "./src/config/*",
     "#api/*": "./src/api/*",
-    "#core/*": "./src/core/*"
+    "#core/*": "./src/core/*",
+    "#models/*": "./src/core/models/*"
   },
   "directories": {
     "test": "tests"
@@ -34,6 +35,7 @@
     "firebase-admin": "^13.6.0",
     "jsonwebtoken": "^9.0.2",
     "module-alias": "^2.2.3",
+    "multer": "^2.0.2",
     "mysql2": "^3.15.3",
     "nodemailer": "^7.0.11",
     "nodemon": "^3.1.11",

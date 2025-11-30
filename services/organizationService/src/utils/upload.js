@@ -14,6 +14,80 @@ import { appConfig } from '#config/app.config.js';
 import { logger } from '#utils/logger.js';
 
 /**
+ * ═══════════════════════════════════════════════════════════════════════════
+ * DIRECT BACKEND UPLOAD HELPERS
+ * ═══════════════════════════════════════════════════════════════════════════
+ */
+
+/**
+ * Upload file to Cloudinary (Backend Direct Upload)
+ * Simple helper for uploading files from backend to Cloudinary
+ * 
+ * @param {string} filePath - Local file path to upload
+ * @param {string} folder - Cloudinary folder path (e.g., 'ngo-connect/logos')
+ * @param {Object} options - Additional Cloudinary upload options
+ * @returns {Promise<Object>} - Upload result with secure_url, public_id, etc.
+ */
+export const uploadToCloudinary = async (filePath, folder, options = {}) => {
+  try {
+    const result = await cloudinary.uploader.upload(filePath, {
+      folder,
+      resource_type: 'auto', // Auto-detect image, video, or raw
+      ...options,
+    });
+
+    logger.info('File uploaded to Cloudinary:', { 
+      public_id: result.public_id,
+      secure_url: result.secure_url 
+    });
+
+    return result;
+  } catch (error) {
+    logger.error('Failed to upload to Cloudinary:', error);
+    throw new Error('File upload failed');
+  }
+};
+
+/**
+ * Upload organization logo to Cloudinary
+ * Preset transformations and folder for organization logos
+ * 
+ * @param {string} filePath - Local file path
+ * @param {string} orgId - Organization ID for folder structure
+ * @returns {Promise<Object>} - Upload result
+ */
+export const uploadOrganizationLogo = async (filePath, orgId) => {
+  return uploadToCloudinary(filePath, `ngo-connect/organizations/${orgId}/logo`, {
+    transformation: [
+      { width: 400, height: 400, crop: 'fit' },
+      { quality: 'auto', fetch_format: 'auto' }
+    ]
+  });
+};
+
+/**
+ * Upload user avatar to Cloudinary
+ * 
+ * @param {string} filePath - Local file path
+ * @param {string} userId - User ID
+ * @returns {Promise<Object>} - Upload result
+ */
+export const uploadUserAvatar = async (filePath, userId) => {
+  return uploadToCloudinary(filePath, `ngo-connect/avatars/${userId}`, {
+    transformation: [
+      { width: 500, height: 500, crop: 'fill', gravity: 'face' },
+      { quality: 'auto', fetch_format: 'auto' }
+    ]
+  });
+};
+
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ * FRONTEND SIGNED URL HELPERS (Existing)
+ * ═══════════════════════════════════════════════════════════════════════════
+ */
+
+/**
  * Generate signed upload URL for Cloudinary
  * Frontend will use this URL to upload files directly to Cloudinary
  * 
@@ -228,10 +302,16 @@ export const deleteFromCloudinary = async (publicId, resourceType = 'image') => 
 };
 
 export default {
+  // Direct backend upload helpers
+  uploadToCloudinary,
+  uploadOrganizationLogo,
+  uploadUserAvatar,
+  // Frontend signed URL helpers
   generateSignedUploadUrl,
   generateAvatarUploadUrl,
   generateDocumentUploadUrl,
   generateNGOImageUploadUrl,
+  // Validation and utilities
   validateCloudinaryUrl,
   extractPublicIdFromUrl,
   deleteFromCloudinary,

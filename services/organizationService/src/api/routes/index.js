@@ -20,7 +20,7 @@ export const setupRoutes = (app) => {
   // Root endpoint
   app.get('/', (req, res) => {
     res.status(200).json({
-      service: 'NGOConnect Auth Service',
+      service: 'NGOConnect Organization Service',
       version: '1.0.0',
       status: 'running',
       timestamp: new Date().toISOString(),

@@ -11,6 +11,10 @@
 
 import sequelize from '#config/database.js';
 import Organization from './Organization.model.js';
+import User from './User.model.js';
+import Role from './Role.model.js';
+import Permission from './Permission.model.js';
+import RolePermission from './RolePermission.model.js';
 // Import other models here as you create them
 // import OrganizationMember from './OrganizationMember.model.js';
 // import Project from './Project.model.js';
@@ -22,6 +26,10 @@ const setupAssociations = () => {
   // Collect all models
   const models = {
     Organization,
+    User,
+    Role,
+    Permission,
+    RolePermission,
     // Add other models here
   };
 
@@ -93,6 +101,10 @@ export {
   
   // Models
   Organization,
+  User,
+  Role,
+  Permission,
+  RolePermission,
   // Add other models here as you create them
   // OrganizationMember,
   // Project,
@@ -107,5 +119,9 @@ export default {
   syncDatabase,
   closeDatabaseConnection,
   Organization,
+  User,
+  Role,
+  Permission,
+  RolePermission,
   // Add other models here
 };
