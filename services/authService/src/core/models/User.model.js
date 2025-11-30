@@ -168,6 +168,19 @@ User.init(
       comment: 'Whether email is verified',
     },
 
+    role:{
+      type: DataTypes.STRING(50),
+      allowNull: false,
+      defaultValue: 'user',
+      validate: {
+        isIn: {
+          args: [['user','admin','super_admin','manager','project_manager','ngo_manager','volunteer', 'doner']],
+          msg: 'Invalid role',
+        },
+      },
+      comment: 'User role (user, admin, super_admin, manager, project_manager, ngo_manager, volunteer, doner)',
+    },
+
     last_login_at: {
       type: DataTypes.DATE,
       allowNull: true,
