@@ -4,7 +4,7 @@
  * ═══════════════════════════════════════════════════════════════════════════
  * 
  * Role-Based Access Control (RBAC) middleware for authorization.
- * Provides role hierarchy checking, permission validation, and tenant isolation.
+ * Provides role hierarchy checking, permission validation, and organization isolation.
  * 
  * @module api/middlewares/rbac
  */
@@ -17,7 +17,7 @@ import createError from 'http-errors';
  */
 const ROLE_HIERARCHY = {
   super_admin: 7,
-  tenant_owner: 6,
+  org_owner: 6,
   admin: 5,
   manager: 4,
   project_manager: 3,
@@ -273,11 +273,11 @@ export const requireAnyPermission = (permissions) => {
 };
 
 /**
- * Middleware to ensure user can only access their own tenant data
- * @param {string} [tenantIdParam='tenantId'] - Request parameter name for tenant ID
+ * Middleware to ensure user can only access their own organization data
+ * @param {string} [orgIdParam='orgId'] - Request parameter name for organization ID
  * @returns {Function} Express middleware
  */
-export const requireTenantAccess = (tenantIdParam = 'tenantId') => {
+export const requireOrgAccess = (orgIdParam = 'orgId') => {
   return async (req, res, next) => {
     try {
       // Ensure user is authenticated
@@ -303,25 +303,25 @@ export const requireTenantAccess = (tenantIdParam = 'tenantId') => {
         throw createError(403, 'User has no assigned role');
       }
 
-      // Super admins can access all tenants
+      // Super admins can access all organizations
       if (user.role.role_name === 'super_admin') {
         req.user = user;
         return next();
       }
 
-      // Get tenant ID from request (params, body, or query)
-      const requestedTenantId =
-        req.params[tenantIdParam] ||
-        req.body?.tenant_id ||
-        req.query?.tenant_id;
+      // Get org ID from request (params, body, or query)
+      const requestedOrgId =
+        req.params[orgIdParam] ||
+        req.body?.org_id ||
+        req.query?.org_id;
 
-      // Check if user's tenant matches the requested tenant
-      if (!user.tenant_id) {
-        throw createError(403, 'User is not associated with any tenant');
+      // Check if user's org matches the requested org
+      if (!user.org_id) {
+        throw createError(403, 'User is not associated with any organization');
       }
 
-      if (String(user.tenant_id) !== String(requestedTenantId)) {
-        throw createError(403, 'Access denied. Cannot access other tenant data');
+      if (String(user.org_id) !== String(requestedOrgId)) {
+        throw createError(403, 'Access denied. Cannot access other organization data');
       }
 
       // Attach user with role to request object
@@ -342,11 +342,11 @@ export const requireSuperAdmin = () => {
 };
 
 /**
- * Middleware to check if user is a tenant owner
+ * Middleware to check if user is an organization owner
  * @returns {Function} Express middleware
  */
-export const requireTenantOwner = () => {
-  return requireRole('tenant_owner');
+export const requireOrgOwner = () => {
+  return requireRole('org_owner');
 };
 
 /**
@@ -366,20 +366,20 @@ export const requireManager = () => {
 };
 
 /**
- * Combined middleware: Check role/permission AND tenant access
+ * Combined middleware: Check role/permission AND org access
  * @param {Object} options - Options object
  * @param {string|string[]} [options.roles] - Required role(s)
  * @param {string|string[]} [options.permissions] - Required permission(s)
- * @param {boolean} [options.checkTenant=true] - Whether to check tenant access
- * @param {string} [options.tenantIdParam='tenantId'] - Tenant ID parameter name
+ * @param {boolean} [options.checkOrg=true] - Whether to check org access
+ * @param {string} [options.orgIdParam='orgId'] - Org ID parameter name
  * @returns {Function} Express middleware
  */
 export const authorize = (options = {}) => {
   const {
     roles,
     permissions,
-    checkTenant = true,
-    tenantIdParam = 'tenantId',
+    checkOrg = true,
+    orgIdParam = 'orgId',
   } = options;
 
   return async (req, res, next) => {
@@ -443,19 +443,19 @@ export const authorize = (options = {}) => {
         }
       }
 
-      // Check tenant access if specified
-      if (checkTenant && user.role.role_name !== 'super_admin') {
-        const requestedTenantId =
-          req.params[tenantIdParam] ||
-          req.body?.tenant_id ||
-          req.query?.tenant_id;
+      // Check org access if specified
+      if (checkOrg && user.role.role_name !== 'super_admin') {
+        const requestedOrgId =
+          req.params[orgIdParam] ||
+          req.body?.org_id ||
+          req.query?.org_id;
 
-        if (!user.tenant_id) {
-          throw createError(403, 'User is not associated with any tenant');
+        if (!user.org_id) {
+          throw createError(403, 'User is not associated with any organization');
         }
 
-        if (requestedTenantId && String(user.tenant_id) !== String(requestedTenantId)) {
-          throw createError(403, 'Access denied. Cannot access other tenant data');
+        if (requestedOrgId && String(user.org_id) !== String(requestedOrgId)) {
+          throw createError(403, 'Access denied. Cannot access other organization data');
         }
       }
 
@@ -476,9 +476,9 @@ export default {
   requireRoleOrHigher,
   requirePermission,
   requireAnyPermission,
-  requireTenantAccess,
+  requireOrgAccess,
   requireSuperAdmin,
-  requireTenantOwner,
+  requireOrgOwner,
   requireAdmin,
   requireManager,
   authorize,

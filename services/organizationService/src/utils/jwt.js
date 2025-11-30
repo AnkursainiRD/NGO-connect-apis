@@ -61,7 +61,7 @@ export const generateTokens = (user) => {
     id: user.id,
     email: user.email,
     name: user.name,
-    tenant_id: user.tenant_id,
+    org_id: user.org_id,
   };
 
   return {

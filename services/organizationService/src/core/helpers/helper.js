@@ -3,13 +3,13 @@ import { appConfig } from '#config/app.config.js';
 import { firebaseAdmin } from '#config/firebase.config.js';
 import { logger } from '#utils/logger.js';
 
-const generateTokens = (email, userId, tenantId, type) => {
+const generateTokens = (email, userId, orgId, type) => {
     try {
         if(type === "refresh"){
         const refreshToken = jwt.sign({
             email,
             userId,
-            tenantId
+            orgId
         }, appConfig.jwt.refreshTokenSecret, {
             expiresIn: appConfig.jwt.refreshTokenExpiry
         })
@@ -23,7 +23,7 @@ const generateTokens = (email, userId, tenantId, type) => {
         const accessToken = jwt.sign({
             email,
             userId,
-            tenantId
+            orgId
         }, appConfig.jwt.accessTokenSecret, {
             expiresIn: appConfig.jwt.accessTokenExpiry
         })
@@ -36,14 +36,14 @@ const generateTokens = (email, userId, tenantId, type) => {
          const refreshToken = jwt.sign({
             email,
             userId,
-            tenantId
+            orgId
         }, appConfig.jwt.refreshTokenSecret, {
             expiresIn: appConfig.jwt.refreshTokenExpiry
         })
          const accessToken = jwt.sign({
             email,
             userId,
-            tenantId
+            orgId
         }, appConfig.jwt.accessTokenSecret, {
             expiresIn: appConfig.jwt.accessTokenExpiry
         })
@@ -55,13 +55,13 @@ const generateTokens = (email, userId, tenantId, type) => {
     }
 }   
 
-const regenrateAccessToken = (refreshToken, email, userId, tenantId) =>{
+const regenrateAccessToken = (refreshToken, email, userId, orgId) =>{
     try {
         const decoded = jwt.verify(refreshToken, appConfig.jwt.refreshTokenSecret);
-        if(decoded.email !== email || decoded.userId !== userId || decoded.tenantId !== tenantId){
+        if(decoded.email !== email || decoded.userId !== userId || decoded.orgId !== orgId){
             throw error;
         }
-        const accessToken = generateTokens({email, userId, tenantId, type: 'access'});
+        const accessToken = generateTokens({email, userId, orgId, type: 'access'});
         return accessToken;
     } catch (error) {
         throw error;
@@ -103,12 +103,12 @@ const checkTokenExpiry = (token, type) => {
     }
 }
 
-const generateResetPasswordToken = (email, userId, tenantId) =>{
+const generateResetPasswordToken = (email, userId, orgId) =>{
     try {
         const resetPasswordToken = jwt.sign({
             email,
             userId,
-            tenantId
+            orgId
         }, appConfig.jwt.resetPasswordTokenSecret, {
             expiresIn: appConfig.jwt.resetPasswordTokenExpiry
         })

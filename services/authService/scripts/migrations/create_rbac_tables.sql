@@ -1,5 +1,5 @@
 -- ═══════════════════════════════════════════════════════════════════════════
--- RBAC Tables Migration
+-- RBAC Tables Creation Script (Updated with Org naming)
 -- ═══════════════════════════════════════════════════════════════════════════
 -- This script creates the necessary tables for the RBAC system
 -- Run this before executing the seedRBAC.js script
@@ -9,12 +9,13 @@
 CREATE TABLE IF NOT EXISTS roles (
     id INT AUTO_INCREMENT PRIMARY KEY,
     role_name VARCHAR(50) NOT NULL UNIQUE,
-    scope ENUM('global', 'tenant', 'public') NOT NULL DEFAULT 'tenant',
+    scope ENUM('global', 'org', 'public') NOT NULL DEFAULT 'org',
     description TEXT,
     hierarchy_level INT NOT NULL DEFAULT 0,
     is_active BOOLEAN NOT NULL DEFAULT TRUE,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    deleted_at TIMESTAMP NULL,
     
     INDEX idx_roles_role_name (role_name),
     INDEX idx_roles_scope (scope),
@@ -32,6 +33,7 @@ CREATE TABLE IF NOT EXISTS permissions (
     is_active BOOLEAN NOT NULL DEFAULT TRUE,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    deleted_at TIMESTAMP NULL,
     
     INDEX idx_permissions_permission_name (permission_name),
     INDEX idx_permissions_resource (resource),
@@ -47,6 +49,7 @@ CREATE TABLE IF NOT EXISTS role_permissions (
     permission_id INT NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    deleted_at TIMESTAMP NULL,
     
     FOREIGN KEY (role_id) REFERENCES roles(id) ON DELETE CASCADE ON UPDATE CASCADE,
     FOREIGN KEY (permission_id) REFERENCES permissions(id) ON DELETE CASCADE ON UPDATE CASCADE,
@@ -56,21 +59,33 @@ CREATE TABLE IF NOT EXISTS role_permissions (
     INDEX idx_role_permissions_permission_id (permission_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- 4. Modify users table to add role_id foreign key
--- First, add the role_id column (nullable initially)
+-- 4. Modify users table to add org_id and role_id
+-- Add org_id column (organization reference)
 ALTER TABLE users 
-ADD COLUMN role_id INT NULL AFTER tenant_id;
+ADD COLUMN org_id BIGINT NULL AFTER id
+COMMENT 'Organization ID for multi-tenancy';
 
--- Add foreign key constraint
+-- Add role_id foreign key
+ALTER TABLE users 
+ADD COLUMN role_id INT NULL AFTER org_id;
+
 ALTER TABLE users 
 ADD CONSTRAINT fk_users_role_id 
 FOREIGN KEY (role_id) REFERENCES roles(id) 
 ON DELETE SET NULL 
 ON UPDATE CASCADE;
 
--- Add index for performance
+-- Add indexes for performance
+ALTER TABLE users 
+ADD INDEX idx_users_org_id (org_id);
+
 ALTER TABLE users 
 ADD INDEX idx_users_role_id (role_id);
+
+-- 5. Update user_activity_logs table to add org_id
+ALTER TABLE user_activity_logs
+ADD COLUMN org_id BIGINT NULL AFTER id
+COMMENT 'Organization ID for multi-tenancy';
 
 -- ═══════════════════════════════════════════════════════════════════════════
 -- DATA MIGRATION (if you have existing users with old role field)
@@ -87,7 +102,7 @@ ADD INDEX idx_users_role_id (role_id);
 -- UPDATE users SET role_id = (SELECT id FROM roles WHERE role_name = 'project_manager') WHERE role = 'project_manager';
 -- UPDATE users SET role_id = (SELECT id FROM roles WHERE role_name = 'volunteer') WHERE role = 'volunteer';
 -- UPDATE users SET role_id = (SELECT id FROM roles WHERE role_name = 'donor') WHERE role IN ('doner', 'donor');
--- UPDATE users SET role_id = (SELECT id FROM roles WHERE role_name = 'tenant_owner') WHERE role IN ('ngo_manager', 'tenant_owner');
+-- UPDATE users SET role_id = (SELECT id FROM roles WHERE role_name = 'org_owner') WHERE role IN ('ngo_manager', 'tenant_owner');
 
 -- After migration is complete and verified, optionally drop the old role column:
 -- ALTER TABLE users DROP COLUMN role;

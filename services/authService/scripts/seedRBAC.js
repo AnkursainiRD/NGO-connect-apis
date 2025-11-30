@@ -18,41 +18,41 @@ const roles = [
   {
     role_name: 'super_admin',
     scope: 'global',
-    description: 'Full system/platform control with access to all tenants',
+    description: 'Full system/platform control with access to all organizations',
     hierarchy_level: 7,
     is_active: true,
   },
   {
-    role_name: 'tenant_owner',
-    scope: 'tenant',
-    description: 'NGO creator with full rights within their organization',
+    role_name: 'org_owner',
+    scope: 'org',
+    description: 'Organization creator with full rights within their organization',
     hierarchy_level: 6,
     is_active: true,
   },
   {
     role_name: 'admin',
-    scope: 'tenant',
-    description: 'NGO management rights with administrative capabilities',
+    scope: 'org',
+    description: 'Organization management rights with administrative capabilities',
     hierarchy_level: 5,
     is_active: true,
   },
   {
     role_name: 'manager',
-    scope: 'tenant',
+    scope: 'org',
     description: 'Project and volunteer management capabilities',
     hierarchy_level: 4,
     is_active: true,
   },
   {
     role_name: 'project_manager',
-    scope: 'tenant',
+    scope: 'org',
     description: 'Specific project control and task management',
     hierarchy_level: 3,
     is_active: true,
   },
   {
     role_name: 'volunteer',
-    scope: 'tenant',
+    scope: 'org',
     description: 'Assigned work only, limited to assigned tasks and projects',
     hierarchy_level: 2,
     is_active: true,
@@ -112,13 +112,13 @@ const permissions = [
   { permission_name: 'tasks.list', resource: 'tasks', action: 'list', description: 'List all tasks' },
   { permission_name: 'tasks.assign', resource: 'tasks', action: 'assign', description: 'Assign tasks to volunteers' },
 
-  // Tenant/NGO management permissions
-  { permission_name: 'tenants.create', resource: 'tenants', action: 'create', description: 'Create new tenants/NGOs' },
-  { permission_name: 'tenants.read', resource: 'tenants', action: 'read', description: 'View tenant details' },
-  { permission_name: 'tenants.update', resource: 'tenants', action: 'update', description: 'Update tenant information' },
-  { permission_name: 'tenants.delete', resource: 'tenants', action: 'delete', description: 'Delete tenants' },
-  { permission_name: 'tenants.list', resource: 'tenants', action: 'list', description: 'List all tenants' },
-  { permission_name: 'tenants.manage', resource: 'tenants', action: 'manage', description: 'Full tenant management' },
+  // Organization management permissions
+  { permission_name: 'organizations.create', resource: 'organizations', action: 'create', description: 'Create new organizations/NGOs' },
+  { permission_name: 'organizations.read', resource: 'organizations', action: 'read', description: 'View organization details' },
+  { permission_name: 'organizations.update', resource: 'organizations', action: 'update', description: 'Update organization information' },
+  { permission_name: 'organizations.delete', resource: 'organizations', action: 'delete', description: 'Delete organizations' },
+  { permission_name: 'organizations.list', resource: 'organizations', action: 'list', description: 'List all organizations' },
+  { permission_name: 'organizations.manage', resource: 'organizations', action: 'manage', description: 'Full organization management' },
 
   // Report permissions
   { permission_name: 'reports.read', resource: 'reports', action: 'read', description: 'View reports' },
@@ -140,14 +140,14 @@ const rolePermissionMappings = {
     // Super admin has ALL permissions
     ...permissions.map(p => p.permission_name),
   ],
-  tenant_owner: [
-    // Tenant owner has full control within their tenant
+  org_owner: [
+    // Org owner has full control within their organization
     'users.manage', 'users.create', 'users.read', 'users.update', 'users.delete', 'users.list',
     'projects.manage', 'projects.create', 'projects.read', 'projects.update', 'projects.delete', 'projects.list', 'projects.assign',
     'volunteers.manage', 'volunteers.create', 'volunteers.read', 'volunteers.update', 'volunteers.delete', 'volunteers.list', 'volunteers.assign',
     'donations.manage', 'donations.create', 'donations.read', 'donations.update', 'donations.list',
     'tasks.create', 'tasks.read', 'tasks.update', 'tasks.delete', 'tasks.list', 'tasks.assign',
-    'tenants.read', 'tenants.update',
+    'organizations.read', 'organizations.update',
     'reports.manage', 'reports.create', 'reports.read',
     'settings.manage', 'settings.read', 'settings.update',
   ],
@@ -158,7 +158,7 @@ const rolePermissionMappings = {
     'volunteers.manage', 'volunteers.create', 'volunteers.read', 'volunteers.update', 'volunteers.list', 'volunteers.assign',
     'donations.read', 'donations.update', 'donations.list',
     'tasks.create', 'tasks.read', 'tasks.update', 'tasks.delete', 'tasks.list', 'tasks.assign',
-    'tenants.read',
+    'organizations.read',
     'reports.create', 'reports.read',
     'settings.read', 'settings.update',
   ],
@@ -169,7 +169,7 @@ const rolePermissionMappings = {
     'volunteers.create', 'volunteers.read', 'volunteers.update', 'volunteers.list', 'volunteers.assign',
     'donations.read', 'donations.list',
     'tasks.create', 'tasks.read', 'tasks.update', 'tasks.list', 'tasks.assign',
-    'tenants.read',
+    'organizations.read',
     'reports.read',
   ],
   project_manager: [

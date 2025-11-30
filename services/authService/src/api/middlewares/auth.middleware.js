@@ -58,7 +58,7 @@ export const authenticate = async (req, res, next) => {
       req.user = {
         userId: decoded.userId,
         email: decoded.email,
-        tenantId: decoded.tenantId,
+        orgId: decoded.orgId,
       };
 
       // Log successful authentication
@@ -140,7 +140,7 @@ export const optionalAuthenticate = async (req, res, next) => {
       req.user = {
         userId: decoded.userId,
         email: decoded.email,
-        tenantId: decoded.tenantId,
+        orgId: decoded.orgId,
       };
     } catch (jwtError) {
       // If token is invalid, just set user to null and continue

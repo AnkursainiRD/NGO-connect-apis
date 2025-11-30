@@ -15,11 +15,11 @@ class Role extends Model {
   }
 
   /**
-   * Check if role is tenant scope
+   * Check if role is org scope
    * @returns {boolean}
    */
-  isTenantScope() {
-    return this.scope === 'tenant';
+  isOrgScope() {
+    return this.scope === 'org';
   }
 
   /**
@@ -73,7 +73,7 @@ Role.init(
           msg: 'Role name cannot be empty',
         },
         isIn: {
-          args: [['super_admin', 'tenant_owner', 'admin', 'manager', 'project_manager', 'volunteer', 'donor']],
+          args: [['super_admin', 'org_owner', 'admin', 'manager', 'project_manager', 'volunteer', 'donor']],
           msg: 'Invalid role name',
         },
       },
@@ -81,10 +81,10 @@ Role.init(
     },
 
     scope: {
-      type: DataTypes.ENUM('global', 'tenant', 'public'),
+      type: DataTypes.ENUM('global', 'org', 'public'),
       allowNull: false,
-      defaultValue: 'tenant',
-      comment: 'Scope of the role: global (platform-wide), tenant (NGO-specific), public (limited access)',
+      defaultValue: 'org',
+      comment: 'Scope of the role: global (platform-wide), org (NGO-specific), public (limited access)',
     },
 
     description: {

@@ -21,7 +21,7 @@ export const corsMiddleware = (req, res, next) => {
   // Allowed headers
   res.setHeader(
     'Access-Control-Allow-Headers',
-    'Origin, X-Requested-With, Content-Type, Accept, Authorization, X-Tenant-ID'
+    'Origin, X-Requested-With, Content-Type, Accept, Authorization, X-Org-ID'
   );
 
   // Allowed methods

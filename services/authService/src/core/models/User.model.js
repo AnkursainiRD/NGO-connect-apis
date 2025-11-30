@@ -152,10 +152,10 @@ User.init(
       allowNull: false,
     },
 
-    tenant_id: {
+    org_id: {
       type: DataTypes.BIGINT,
       allowNull: true,
-      comment: 'Organization/NGO tenant ID for multi-tenancy',
+      comment: 'Organization ID for multi-tenancy',
     },
 
     name: {
@@ -316,8 +316,8 @@ User.init(
         name: 'idx_users_email',
       },
       {
-        fields: ['tenant_id'],
-        name: 'idx_users_tenant_id',
+        fields: ['org_id'],
+        name: 'idx_users_org_id',
       },
       {
         fields: ['auth_provider'],
