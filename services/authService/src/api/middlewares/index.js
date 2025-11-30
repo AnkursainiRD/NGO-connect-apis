@@ -5,6 +5,9 @@ import { corsMiddleware } from '#api/middlewares/cors.middleware.js';
 import { securityHeaders } from '#api/middlewares/security.middleware.js';
 import { rateLimitMiddleware } from '#api/middlewares/rateLimit.middleware.js';
 
+// Export RBAC middleware
+export * from './rbac.middleware.js';
+
 /**
  * Setup all global middlewares
  * @param {express.Application} app - Express application instance
