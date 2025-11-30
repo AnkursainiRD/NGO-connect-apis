@@ -25,7 +25,7 @@ const handleValidationErrors = (req, res, next) => {
 
 /**
  * Register validation rules
- * Matches users table schema: name, email, password_hash, phone, tenant_id
+ * Matches users table schema: name, email, password_hash, phone, org_id
  */
 export const registerValidator = [
   body('email')
@@ -61,10 +61,10 @@ export const registerValidator = [
     .matches(/^[+]?[(]?[0-9]{1,4}[)]?[-\s.]?[(]?[0-9]{1,4}[)]?[-\s.]?[0-9]{1,9}$/)
     .withMessage('Invalid phone number format'),
   
-  body('tenant_id')
+  body('org_id')
     .optional()
     .isInt({ min: 1 })
-    .withMessage('Tenant ID must be a positive integer')
+    .withMessage('Organization ID must be a positive integer')
     .toInt(),
   
   body('auth_provider')

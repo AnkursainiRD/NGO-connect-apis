@@ -16,7 +16,7 @@ export default class AuthController {
    */
   register = async (req, res) => {
     try {
-      const { name, email, password, phone, auth_provider, two_factor_enabled, tenant_id } = req.body;
+      const { name, email, password, phone, auth_provider, two_factor_enabled, org_id } = req.body;
       
       // Check if user already exists
       const existedUser = await User.findOne({ where: { email } });
@@ -33,7 +33,7 @@ export default class AuthController {
         avatar_url: null, // Will be updated after avatar upload
         auth_provider: auth_provider || 'local',
         two_factor_enabled: two_factor_enabled || false,
-        tenant_id,
+        org_id,
         email_verified: false,
         phone_verified: false,
       });
@@ -85,7 +85,7 @@ export default class AuthController {
         return errorResponse(res, { message: 'Invalid password' });
       }
 
-      const { refreshToken, accessToken } = await generateTokens(user.email, user.id, user.tenant_id, "both");
+      const { refreshToken, accessToken } = await generateTokens(user.email, user.id, user.org_id, "both");
       if(!refreshToken || !accessToken){
         return errorResponse(res, { message: 'Failed to generate tokens' });
       }
@@ -95,7 +95,7 @@ export default class AuthController {
         user_id: user.id,
         entity_type: 'user',
         entity_id: user.id,
-        tenant_id: user.tenant_id,
+        org_id: user.org_id,
         action: 'login',
         description: 'User logged in',
         ip_address: req.ip,
@@ -135,7 +135,7 @@ export default class AuthController {
   socialLogin = async (req, res) => {
     try{
       const token = req.user.oAuthToken;
-      const { tenant_id } = req.body;
+      const { org_id } = req.body;
 
       if(!token){
         return unauthorizedResponse(res, 'Unauthorized');
@@ -146,8 +146,8 @@ export default class AuthController {
         return unauthorizedResponse(res, 'Unauthorized');
       }
 
-      if(!tenant_id){
-        return badRequestResponse(res, 'Tenant ID is required');
+      if(!org_id){
+        return badRequestResponse(res, 'Organization ID is required');
       }
       const existedUser = await User.findOne({ where: { email: userData.email } });
       let user;
@@ -162,7 +162,7 @@ export default class AuthController {
           avatar_url: userData.picture? userData.picture : null,
           auth_provider: 'firebase',
           two_factor_enabled: true,
-          tenant_id,
+          org_id,
         });
 
         const user_auth_provider = await UserAuthProviders.create({
@@ -179,13 +179,13 @@ export default class AuthController {
         ip_address: req.ip,
         entity_type: 'user',
         entity_id: user.id,
-        tenant_id: tenant_id,
+        org_id: org_id,
         action: 'social_login',
         description: 'User logged in',
         user_agent: req.headers['user-agent'],
       });
       
-      const { refreshToken, accessToken } = generateTokens(user.email, user.id, tenant_id, "both");
+      const { refreshToken, accessToken } = generateTokens(user.email, user.id, org_id, "both");
       if(!refreshToken || !accessToken){
         return errorResponse(res, { message: 'Failed to generate tokens' });
       }
@@ -236,7 +236,7 @@ export default class AuthController {
       
       await UserActivityLogs.logActivity({
         user_id: user.id,
-        tenant_id: user.tenant_id,
+        org_id: user.org_id,
         entity_type: 'user',
         entity_id: user.id,
         action: 'logout',
@@ -280,7 +280,7 @@ export default class AuthController {
       }else{
         tokenType = "access";
       }
-      const tokens = generateTokens(user.email, user.id, user.tenant_id, tokenType);
+      const tokens = generateTokens(user.email, user.id, user.org_id, tokenType);
       if(!tokens.accessToken){
         return errorResponse(res, 'Failed to generate tokens');
       }
@@ -326,7 +326,7 @@ export default class AuthController {
       if(!user){
         return notFoundResponse(res, 'User not found');
       }
-      const { resetPasswordToken } = generateResetPasswordToken(user.email, user.id, user.tenant_id);      
+      const { resetPasswordToken } = generateResetPasswordToken(user.email, user.id, user.org_id);      
 
 
       // Load and render the forgot password template

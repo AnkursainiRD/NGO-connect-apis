@@ -60,7 +60,7 @@ ${idToken}
             "Content-Type": "application/json",
             "Authorization": "Bearer " + idToken
           },
-          body: JSON.stringify({tenant_id:1})
+          body: JSON.stringify({org_id:1})
         });
 
         const backendData = await response.json();

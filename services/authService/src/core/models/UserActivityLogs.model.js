@@ -11,8 +11,8 @@ export class UserActivityLogs extends Model {
         // UserActivityLogs belongs to User
         this.belongsTo(models.User,{foreignKey: 'user_id',as: 'user'});
         
-        // If you have a Tenant model, add this association:
-        // this.belongsTo(models.Tenant,{foreignKey: 'tenant_id',as: 'tenant'});
+        // User activity log belongs to an organization
+        // this.belongsTo(models.Organization,{foreignKey: 'org_id',as: 'organization'});
     }
 
     /**
@@ -31,7 +31,7 @@ export class UserActivityLogs extends Model {
 }
 // CREATE TABLE activity_logs (
 //   id BIGINT PRIMARY KEY AUTO_INCREMENT,
-//   tenant_id BIGINT NULL,                          -- FK → tenants.id
+//   org_id BIGINT NULL,                          -- FK → organizations.id
 //   user_id BIGINT NULL,                            -- FK → users.id
 //   entity_type VARCHAR(100) NULL,                  -- e.g., 'project', 'donation', 'campaign'
 //   entity_id BIGINT NULL,
@@ -49,10 +49,10 @@ UserActivityLogs.init({
         autoIncrement:true,
         allowNull:false
     },
-    tenant_id:{
+    org_id:{
         type:DataTypes.BIGINT,
         allowNull:true,
-        comment:'Organization/NGO tenant ID for multi-tenancy',
+        comment:'Organization ID for multi-tenancy',
     },
     user_id:{
         type:DataTypes.BIGINT,
