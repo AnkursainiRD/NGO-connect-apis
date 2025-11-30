@@ -1,12 +1,46 @@
 {
-    "name": "ngoconnect",
-    "private": true,
-    "scripts": {
-      "start:all": "concurrently \"npm start --prefix services/auth-service\" \"npm start --prefix services/donation-service\""
-    },
-    "devDependencies": {
-      "concurrently": "^8.0.0",
-      "nodemon": "^3.0.0"
-    }
+  "name": "ngo-connect-api",
+  "version": "1.0.0",
+  "description": "NGOConnect Monolithic API - Authentication, Organizations, and RBAC",
+  "main": "index.js",
+  "type": "module",
+  "imports": {
+    "#utils/*": "./src/utils/*",
+    "#config/*": "./src/config/*",
+    "#api/*": "./src/api/*",
+    "#core/*": "./src/core/*",
+    "#models/*": "./src/core/models/*"
+  },
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node index.js",
+    "dev": "nodemon index.js",
+    "redis": "docker exec -it redis_server redis-cli",
+    "seed:rbac": "node scripts/seedRBAC.js"
+  },
+  "keywords": ["ngo", "api", "authentication", "rbac", "organizations"],
+  "author": "Ankur Saini & Anshul",
+  "license": "ISC",
+  "dependencies": {
+    "bcrypt": "^6.0.0",
+    "canvas": "^3.2.0",
+    "cloudinary": "^2.8.0",
+    "cookie-parser": "^1.4.7",
+    "dotenv": "^17.2.3",
+    "ejs": "^3.1.10",
+    "express": "^5.1.0",
+    "express-validator": "^7.3.0",
+    "firebase-admin": "^13.6.0",
+    "http-errors": "^2.0.0",
+    "jsonwebtoken": "^9.0.2",
+    "multer": "^1.4.5-lts.1",
+    "mysql2": "^3.15.3",
+    "nodemailer": "^7.0.11",
+    "nodemon": "^3.1.11",
+    "redis": "^5.10.0",
+    "sequelize": "^6.37.7"
   }
-   
+}
